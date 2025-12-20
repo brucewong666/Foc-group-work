@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>光影树林场景</title>
+  <style>
+    :root {
+      color-scheme: only light;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 20% 15%, #e4f0ff 0 18%, #c7dcff 35%, #9fb6db 60%, #5c7495 100%);
+      font-family: "Noto Serif SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    .scene {
+      position: relative;
+      width: min(960px, 96vw);
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(#1f2c3d 0 50%, #2f3f55 50% 100%);
+      isolation: isolate;
+    }
+
+    /* 阳光光束：使用线性渐变和混合模式模拟体积光 */
+    .light { 
+      position: absolute;
+      inset: -10% auto 0 5%;
+      width: 70%;
+      background: linear-gradient(60deg, rgba(255, 248, 225, 0.75), rgba(255, 248, 225, 0) 55%);
+      filter: blur(2px);
+      mix-blend-mode: screen;
+      transform: skewX(-6deg);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 远景树干：层次化的色彩与模糊营造深度 */
+    .trees {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      gap: 28px;
+      padding: 0 32px;
+      align-items: flex-end;
+      z-index: 2;
+    }
+
+    .tree {
+      position: relative;
+      width: 18px;
+      height: 68%;
+      background: linear-gradient(#1b222d, #0f141c);
+      border-radius: 12px 12px 4px 4px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 18px rgba(0, 0, 0, 0.45);
+    }
+
+    .tree:nth-child(odd) { height: 80%; }
+    .tree:nth-child(3n) { height: 90%; }
+
+    /* 斜向光下的树干高光与阴影 */
+    .tree::before,
+    .tree::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .tree::before {
+      background: linear-gradient(90deg, rgba(235, 224, 190, 0.35) 0 25%, transparent 45%);
+      mix-blend-mode: screen;
+      filter: blur(0.5px);
+    }
+
+    .tree::after {
+      background: linear-gradient(90deg, transparent 60%, rgba(5, 7, 12, 0.55) 85%);
+      mix-blend-mode: multiply;
+    }
+
+    /* 树枝，遵循受力从粗到细的规律 */
+    .branch {
+      position: absolute;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(245, 234, 210, 0.35), rgba(12, 17, 26, 0.8));
+      transform-origin: 0 50%;
+      border-radius: 3px;
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+    }
+
+    /* 前景树干：更深的阴影与更大的尺寸 */
+    .foreground {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      gap: 18px;
+      padding: 0 18px;
+      align-items: flex-end;
+      z-index: 4;
+    }
+
+    .foreground .tree {
+      width: 28px;
+      height: 100%;
+      background: linear-gradient(#10161e, #070b12);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 16px 36px rgba(0, 0, 0, 0.6);
+    }
+
+    .foreground .branch {
+      height: 4px;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45));
+    }
+
+    /* 地面与草地渐变，符合入射光角度的亮暗过渡 */
+    .ground {
+      position: absolute;
+      inset: 60% -10% -12%;
+      background:
+        radial-gradient(circle at 22% 20%, rgba(255, 247, 216, 0.32), transparent 32%),
+        linear-gradient(120deg, rgba(14, 24, 35, 0.9), rgba(20, 35, 46, 0.85)),
+        linear-gradient(#0d141c, #0b141f 35%, #0a1220);
+      border-radius: 50%;
+      filter: blur(2px);
+      z-index: 3;
+    }
+
+    /* 空气粒子和浮尘，受光线方向影响的透明度 */
+    .dust {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 18%, rgba(255, 240, 205, 0.45), transparent 22%),
+        radial-gradient(circle at 38% 32%, rgba(255, 240, 205, 0.35), transparent 20%),
+        radial-gradient(circle at 24% 26%, rgba(255, 240, 205, 0.25), transparent 20%);
+      mix-blend-mode: screen;
+      filter: blur(0.6px);
+      opacity: 0.9;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* 层叠雾气：前后景对比突出光影深度 */
+    .fog {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 50%),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+      mix-blend-mode: screen;
+      filter: blur(8px);
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    /* 太阳高光，模拟体积光源 */
+    .sun {
+      position: absolute;
+      top: 10%;
+      left: 12%;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(255, 251, 236, 0.9), rgba(255, 238, 202, 0.22) 60%, transparent 70%);
+      filter: blur(1px);
+      mix-blend-mode: screen;
+      z-index: 0;
+    }
+
+    /* 叶片带来的斑驳影子 */
+    .dappled {
+      position: absolute;
+      inset: 55% -20% -12% -15%;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(7, 11, 16, 0.28), transparent 40%),
+        radial-gradient(circle at 46% 48%, rgba(7, 11, 16, 0.22), transparent 42%),
+        radial-gradient(circle at 60% 32%, rgba(7, 11, 16, 0.18), transparent 40%),
+        radial-gradient(circle at 70% 56%, rgba(7, 11, 16, 0.24), transparent 42%);
+      mix-blend-mode: multiply;
+      filter: blur(3px);
+      z-index: 7;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="scene" aria-label="阳光照射的树林场景">
+    <div class="sun"></div>
+    <div class="light"></div>
+
+    <div class="trees" aria-hidden="true">
+      <div class="tree" style="height: 82%;">
+        <span class="branch" style="width: 32%; top: 24%; left: 0; transform: rotate(-12deg);"></span>
+        <span class="branch" style="width: 40%; top: 42%; left: 0; transform: rotate(-8deg);"></span>
+        <span class="branch" style="width: 48%; top: 62%; left: 0; transform: rotate(-5deg);"></span>
+      </div>
+      <div class="tree" style="height: 76%;">
+        <span class="branch" style="width: 26%; top: 26%; left: 0; transform: rotate(-16deg);"></span>
+        <span class="branch" style="width: 38%; top: 44%; left: 0; transform: rotate(-8deg);"></span>
+        <span class="branch" style="width: 46%; top: 64%; left: 0; transform: rotate(-4deg);"></span>
+      </div>
+      <div class="tree" style="height: 88%;">
+        <span class="branch" style="width: 28%; top: 28%; left: 0; transform: rotate(-10deg);"></span>
+        <span class="branch" style="width: 42%; top: 46%; left: 0; transform: rotate(-6deg);"></span>
+        <span class="branch" style="width: 50%; top: 66%; left: 0; transform: rotate(-3deg);"></span>
+      </div>
+      <div class="tree" style="height: 70%;">
+        <span class="branch" style="width: 26%; top: 22%; left: 0; transform: rotate(-14deg);"></span>
+        <span class="branch" style="width: 38%; top: 40%; left: 0; transform: rotate(-8deg);"></span>
+        <span class="branch" style="width: 44%; top: 60%; left: 0; transform: rotate(-4deg);"></span>
+      </div>
+      <div class="tree" style="height: 92%;">
+        <span class="branch" style="width: 30%; top: 24%; left: 0; transform: rotate(-12deg);"></span>
+        <span class="branch" style="width: 44%; top: 42%; left: 0; transform: rotate(-8deg);"></span>
+        <span class="branch" style="width: 52%; top: 62%; left: 0; transform: rotate(-5deg);"></span>
+      </div>
+    </div>
+
+    <div class="ground" aria-hidden="true"></div>
+    <div class="dappled" aria-hidden="true"></div>
+
+    <div class="foreground" aria-hidden="true">
+      <div class="tree">
+        <span class="branch" style="width: 48%; top: 24%; left: 0; transform: rotate(-10deg);"></span>
+        <span class="branch" style="width: 60%; top: 44%; left: 0; transform: rotate(-6deg);"></span>
+        <span class="branch" style="width: 68%; top: 66%; left: 0; transform: rotate(-4deg);"></span>
+      </div>
+      <div class="tree" style="height: 92%;">
+        <span class="branch" style="width: 44%; top: 28%; left: 0; transform: rotate(-12deg);"></span>
+        <span class="branch" style="width: 56%; top: 48%; left: 0; transform: rotate(-7deg);"></span>
+        <span class="branch" style="width: 70%; top: 70%; left: 0; transform: rotate(-4deg);"></span>
+      </div>
+      <div class="tree">
+        <span class="branch" style="width: 52%; top: 26%; left: 0; transform: rotate(-14deg);"></span>
+        <span class="branch" style="width: 64%; top: 46%; left: 0; transform: rotate(-8deg);"></span>
+        <span class="branch" style="width: 72%; top: 68%; left: 0; transform: rotate(-5deg);"></span>
+      </div>
+      <div class="tree" style="height: 96%;">
+        <span class="branch" style="width: 50%; top: 24%; left: 0; transform: rotate(-12deg);"></span>
+        <span class="branch" style="width: 62%; top: 46%; left: 0; transform: rotate(-7deg);"></span>
+        <span class="branch" style="width: 76%; top: 68%; left: 0; transform: rotate(-4deg);"></span>
+      </div>
+    </div>
+
+    <div class="dust" aria-hidden="true"></div>
+    <div class="fog" aria-hidden="true"></div>
+  </main>
+</body>
+</html>
