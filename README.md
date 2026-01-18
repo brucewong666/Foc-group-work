@@ -1,6 +1,7 @@
 # Foc-group-work
-foc 小组代码快速同步平台
 
-请用common 提交change
+贪吃蛇小游戏。
 
-进度已更新，见https://github.com/lemonblank218/Foc-group-work/tree/%E7%99%BB%E5%BD%95%E7%B3%BB%E7%BB%9F%EF%BC%8C?tab=readme-ov-file#
+## 使用方式
+
+直接打开 `index.html` 即可开始游戏，方向键或 WASD 控制移动，空格暂停，R 重新开始。游戏支持穿越边缘与多种随机道具（加速、减速、护盾、双倍得分）。
