@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>贪吃蛇</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <h1>贪吃蛇</h1>
+        <p>使用方向键或 WASD 控制，空格键暂停。</p>
+      </div>
+      <div class="stats">
+        <div>
+          <span class="label">得分</span>
+          <span id="score">0</span>
+        </div>
+        <div>
+          <span class="label">最高分</span>
+          <span id="highScore">0</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="game">
+      <canvas id="gameCanvas" width="480" height="480" aria-label="贪吃蛇画布"></canvas>
+      <aside class="panel">
+        <h2>操作说明</h2>
+        <ul>
+          <li>方向键 / WASD：移动</li>
+          <li>空格：暂停 / 继续</li>
+          <li>R：重新开始</li>
+        </ul>
+        <button id="restart" type="button">重新开始</button>
+        <div id="status" class="status" aria-live="polite"></div>
+      </aside>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
